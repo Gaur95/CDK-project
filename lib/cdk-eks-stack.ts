@@ -15,7 +15,7 @@ export class CdkEksStack extends cdk.Stack {
     });
     const cluster = new eks.Cluster(this, 'HelloEKS', {
       vpc,
-      version: eks.KubernetesVersion.V1_29,
+      version: eks.KubernetesVersion.V1_27,
       defaultCapacityInstance: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MEDIUM),
       defaultCapacity: 2,
       clusterName: 'cdkekscluster',
@@ -24,9 +24,9 @@ export class CdkEksStack extends cdk.Stack {
       endpointAccess: eks.EndpointAccess.PUBLIC
     });
     
-    cluster.addFargateProfile('MyProfile', {
-      selectors: [ { namespace: 'default' } ],
-    });
+    // cluster.addFargateProfile('MyProfile', {
+    //   selectors: [ { namespace: 'default' } ],
+    // });
 
     new cdk.CfnOutput(this, 'clusterName',{
       value: cluster.clusterName ,
