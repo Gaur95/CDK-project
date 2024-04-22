@@ -3,7 +3,7 @@ import { Construct } from 'constructs';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as eks from 'aws-cdk-lib/aws-eks';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import { env } from 'process';
+import * as iam from 'aws-cdk-lib/aws-iam';
 
 export class CdkEksStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -13,11 +13,17 @@ export class CdkEksStack extends cdk.Stack {
       availabilityZones: ['ap-south-1a', 'ap-south-1b', 'ap-south-1c'], // Add your existing VPC's availability zones
       publicSubnetIds:['subnet-0327e65b68de0edf0','subnet-0b94ee00d1b6e99b2','subnet-065c2af6c1ea5f9c1']
     });
+
+    const eksAdminRole = new iam.Role(this, 'EksAdminRole', {
+      assumedBy: new iam.AccountRootPrincipal(),
+  });
+
     const cluster = new eks.Cluster(this, 'HelloEKS', {
       vpc,
-      version: eks.KubernetesVersion.V1_27,
-      defaultCapacityInstance: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MEDIUM),
+      version: eks.KubernetesVersion.V1_29,
+      defaultCapacityInstance: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
       defaultCapacity: 2,
+      mastersRole: eksAdminRole,
       clusterName: 'cdkekscluster',
       vpcSubnets: [{ subnetType: ec2.SubnetType.PUBLIC}],
       securityGroup:  ec2.SecurityGroup.fromSecurityGroupId(this, 'ExistingSecurityGroup', 'sg-04e781f606c492eb6'),
@@ -27,6 +33,10 @@ export class CdkEksStack extends cdk.Stack {
     // cluster.addFargateProfile('MyProfile', {
     //   selectors: [ { namespace: 'default' } ],
     // });
+    // const mastersRole = new iam.Role(this, 'MastersRole', {
+    //   assumedBy: new iam.AccountRootPrincipal(),});
+
+    // cluster.awsAuth.addMastersRole(mastersRole);
 
     new cdk.CfnOutput(this, 'clusterName',{
       value: cluster.clusterName ,
