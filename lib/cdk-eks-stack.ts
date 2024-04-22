@@ -33,10 +33,6 @@ export class CdkEksStack extends cdk.Stack {
     // cluster.addFargateProfile('MyProfile', {
     //   selectors: [ { namespace: 'default' } ],
     // });
-    // const mastersRole = new iam.Role(this, 'MastersRole', {
-    //   assumedBy: new iam.AccountRootPrincipal(),});
-
-    // cluster.awsAuth.addMastersRole(mastersRole);
 
     new cdk.CfnOutput(this, 'clusterName',{
       value: cluster.clusterName ,
