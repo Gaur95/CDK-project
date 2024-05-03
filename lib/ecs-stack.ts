@@ -2,7 +2,6 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-
 export class EcsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, { ...props , env: { region: 'ap-south-1'}});
@@ -14,10 +13,30 @@ export class EcsStack extends cdk.Stack {
     });
     const cluster = new ecs.Cluster(this , 'myecscluster' , {
      vpc,
+     clusterName: 'myecscluster'
+     
     });
-    cluster.addCapacity('DefaultAutoScalingGroupCapacity', {
-      instanceType: new ec2.InstanceType("t2.micro"),
-      desiredCapacity: 3,
+    // cluster.addCapacity('DefaultAutoScalingGroupCapacity', {
+    //   instanceType: new ec2.InstanceType("t2.micro"),
+    //   desiredCapacity: 3,
+    // });
+    const fargateTaskDefinition = new ecs.FargateTaskDefinition(this, 'TaskDef', {
+      memoryLimitMiB: 512,
+      cpu: 256,
+    });
+    const container = fargateTaskDefinition.addContainer("webContainer",
+    {
+      image: ecs.ContainerImage.fromRegistry("httpd"),
+      containerName: "akconatiner",
+      portMappings: [{ containerPort: 80 }],
+      
+      
+    });
+    const service = new ecs.FargateService(this , 'service' ,  {
+      cluster,
+      taskDefinition: fargateTaskDefinition,
+      desiredCount: 2,
+      serviceName: 'myservice',
     });
   }
 }
